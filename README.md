@@ -92,7 +92,7 @@ manyrules = TableRuleset([
 ])
 ```
 
-Then add such add `manyrules` to the rulest, just as you would with any other `Rule` instance:
+Add `manyrules` to the ruleset, just as you would with any other `Rule` instance:
 
 ```
 ruleset = (CalculateBasicFare(),
