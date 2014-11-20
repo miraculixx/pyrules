@@ -63,7 +63,17 @@ print "executed", context._executed
 
 ### Advanced features
 
-*TableRulesets*
+*SequencedRuleset*
+
+A `SequencedRuleset` ensures that rules are executed in sequence:
+
+```
+ruleset = (
+   SequencedRuleset([CalculateBasicFare(), CalculateWeekendFare()]),
+)
+```
+
+*TableRuleset*
 
 A `TableRuleset`  is defined by a list of rules given in the following form. Note that the list of conditions (`if`) are
 must all be met for the rule to trigger (logical AND). If the rule triggers, each action _i_ ( `then`) is executed and
@@ -80,6 +90,15 @@ manyrules = TableRuleset([
     'target' : ['fare'],
   }
 ])
+```
+
+Then add such add `manyrules` to the rulest, just as you would with any other `Rule` instance:
+
+```
+ruleset = (CalculateBasicFare(),
+           CalculateWeekendFare(),
+           manyrules,
+)
 ```
 
 *Natural language rules*
