@@ -8,6 +8,8 @@ This is a first go at implementing a generic Rule Engine in Python.
 What you can do with it
 -----------------------
 
+See `sample.py` for a complete sample.
+
 *Basic example*
 
 1. Define simple rules
