@@ -148,6 +148,12 @@ fare 300.0
 executed [('CalculateBasicFare', 200), ('TableRuleset.1', 200), ('TableRuleset.2', 300.0), ('TableRuleset', True)]
 ```
 
+### A word of caution
+
+`TableRuleset` rules are executed by Python's `eval` function, which is considered [unsafe](http://nedbatchelder.com/blog/201206/eval_really_is_dangerous.html). This may become a problem if you allow users to edit their own rules by inserting arbitrary text (=> code) in the `if`, `then` or `target` sections of a rule in `TableRuleset`
+
+So is pyrules unsafe by conclusion? No! Any `Rule` instance other than `TableRuleset` is just pure Python code -- no eval magic applied.
+
 ### How to contribute
 
 All contributes are welcome! Please have a look at the list of issues. If you find a bug, please open a new issue. 
