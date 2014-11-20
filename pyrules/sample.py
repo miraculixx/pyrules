@@ -1,5 +1,5 @@
 from pyrules.engine import RuleContext, RuleEngine
-from pyrules.rules import Rule, TableRuleset
+from pyrules.rules import Rule, TableRuleset, LambdaRule
 
 
 class CalculateBasicFare(Rule):
@@ -15,6 +15,10 @@ class CalculateWeekendFare(Rule):
     def perform(self, context):
         context.fare = context.fare * 1.2
         return context.fare 
+    
+class LambdaRuleSample(LambdaRule):
+    condition = lambda self, context: not context.weekend
+    action = lambda self, context: { 'fare' : context.fare * 4 }
     
 translations=[
   ('das Wetter', 'context.weather'),
@@ -39,6 +43,7 @@ manyrules = TableRuleset([
 
 ruleset = (CalculateBasicFare(),
            CalculateWeekendFare(),
+           LambdaRuleSample(),
            manyrules,
            #SequencedRuleset([CalculateBasicFare(), CalculateWeekendFare()]),
 )

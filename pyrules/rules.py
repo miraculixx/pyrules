@@ -15,6 +15,29 @@ class Rule(object):
     def ruleid(self):
         return self.__class__.__name__.split('.')[-1]
     
+class LambdaRule(Rule):
+    """
+    LambdaRules define two class-variable lambdas: condition and action
+    
+    condition = lambda self, context: <some condition returning True or False>
+    action = lambda self, context: <return a dict to update the context with>
+    
+    Example:
+    
+    class MyLambdaRule(Rule):
+        # always run and return 5
+        condition = lambda self, context: True
+        action = lambda self, context: { 'result': 5 }
+    """
+    condition = lambda self, context: False
+    action = lambda self, context: None 
+    def should_trigger(self, context):
+        return self.condition(context)
+    def perform(self, context):
+        result = self.action(context) 
+        context.update(result)
+        return result
+    
 class TableRuleset(Rule):
     """
     a table ruleset created from a list of dict objects of the following format
