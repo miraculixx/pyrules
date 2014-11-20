@@ -3,7 +3,7 @@ pyrules
 
 Python Rules Engine
 
-This is a first go at implementing a generic Rule Engine in Python.
+This is a first go at implementing a generic Rule Engine in Python. Its a working solution, but it is not ready for large-scale or even small-scale production use. Use at your own risk, but please do contribute.
 
 What you can do with it
 -----------------------
