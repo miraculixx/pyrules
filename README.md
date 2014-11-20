@@ -12,7 +12,7 @@ See `sample.py` for a complete sample.
 
 *Basic example*
 
-1. Define simple rules
+1. Define simple rules in plain Python
 
 ``` python
 class CalculateBasicFare(Rule):
@@ -28,6 +28,14 @@ class CalculateWeekendFare(Rule):
     def perform(self, context):
         context.fare = context.fare * 1.2
         return context.fare 
+```
+
+Or even simpler, using a `LambdaRule`:
+
+``` python
+class LambdaRuleSample(LambdaRule):
+    condition = lambda self, context: not context.weekend
+    action = lambda self, context: { 'fare' : context.fare * 4 }
 ```
 
 2. Define a ruleset
