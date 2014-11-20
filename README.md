@@ -59,6 +59,9 @@ engine = RuleEngine()
 context = engine.execute(ruleset, context)
 print "fare", context.fare
 print "executed", context._executed
+=>
+fare 300.0
+executed [('CalculateBasicFare', 200), ('TableRuleset.1', 200), ('TableRuleset.2', 300.0), ('TableRuleset', True)]
 ```
 
 ### Advanced features
