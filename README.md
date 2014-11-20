@@ -131,6 +131,23 @@ manyrules = TableRuleset([
 ], translations=translations)
 ```
 
+Execute:
+
+```
+context = RuleContext()
+context.distance = 10
+context.weekend = 0
+context.weather = 'nice'
+context.sunday = 1
+ruleset = (CalculateBasicFare(),
+           CalculateWeekendFare(),
+           manyrules,
+)
+=> 
+fare 300.0
+executed [('CalculateBasicFare', 200), ('TableRuleset.1', 200), ('TableRuleset.2', 300.0), ('TableRuleset', True)]
+```
+
 ### How to contribute
 
 All contributes are welcome! Please have a look at the list of issues. If you find a bug, please open a new issue. 
