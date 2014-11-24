@@ -32,9 +32,11 @@ class LambdaRule(Rule):
     condition = lambda self, context: False
     action = lambda self, context: None 
     def should_trigger(self, context):
-        return self.condition(context)
+        condition = self.condition
+        return condition(context)
     def perform(self, context):
-        result = self.action(context) 
+        action = self.action
+        result = action(context) 
         context.update(result)
         return result
     
@@ -105,7 +107,7 @@ class SequencedRuleset(Rule):
                 rule.record(context, result)
         return True
     
-class NaturalLanguageRule(TableRuleset):
+class NaturalLanguageRule(Rule):
     """
     A natural language rule given as a text. 
     TODO implement this

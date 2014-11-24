@@ -19,6 +19,11 @@ class CalculateWeekendFare(Rule):
 class LambdaRuleSample(LambdaRule):
     condition = lambda self, context: not context.weekend
     action = lambda self, context: { 'fare' : context.fare * 4 }
+
+class LambdaShortSyntaxRuleSample(LambdaRule):
+    condition = lambda s, c: not c.weekend
+    action = lambda s, c: { 'fare' : c.fare * 4 }
+    
     
 translations=[
   ('das Wetter', 'context.weather'),
