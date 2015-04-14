@@ -9,19 +9,24 @@ class RuleContext(DictObject):
     for the rules to consider. A rule does not have access to
     any other data except provided in this rule context. 
     """
-    def __init__(self):
-        super(RuleContext, self).__init__()
+    def __init__(self, initial=None):
+        super(RuleContext, self).__init__(initial=initial)
         self._executed=[]
+
     def __setitem__(self, item, value):
         self.__setattr__(item, value)
-    def __getattr__(self, item):
-        if not item in self.__dict__ and not item in self._data:
-            return None
-        return super(RuleContext, self).__getattr__(item)
+
     @property
     def as_dict(self):
-        return {'context' : self }
+        return {'context' : self}
 
+    def to_dict(self):
+        # Return copy of context data to prevent later modification by
+        # caller
+        return dict(self._data)
+
+    def __unicode__(self):
+        return unicode(self.to_dict())
 
 
 class RuleEngine(object):

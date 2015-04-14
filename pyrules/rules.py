@@ -3,41 +3,66 @@ from pyrules.language import Translator
      
 class Rule(object):
     """
-    basic rule
+    Base rule
     """
     def should_trigger(self, context):
-        pass
+        return True
+
     def perform(self, context):
-        pass
+        raise NotImplementedError
+
     def record(self, context, result):
         context._executed.append((self.ruleid, result))
+
     @property
     def ruleid(self):
-        return self.__class__.__name__.split('.')[-1]
-    
-class LambdaRule(Rule):
+        return self.__class__.__name__.rsplit('.', 1)[-1]
+
+
+class ConditionalRule(Rule):
     """
-    LambdaRules define two class-variable lambdas: condition and action
+    ConditionalRule defines receives two functions as parameters: condition and action
     
-    condition = lambda self, context: <some condition returning True or False>
-    action = lambda self, context: <return a dict to update the context with>
+    @param condition: lambda context: <some condition returning True or False>
+    @param action: lambda context: <return a dict to update the context with>
     
     Example:
     
-    class MyLambdaRule(Rule):
-        # always run and return 5
-        condition = lambda self, context: True
-        action = lambda self, context: { 'result': 5 }
+    >>> rule = ConditionalRule(
+    ...     condition=lambda context: True,
+    ...     action=lambda context: {'result': 5})
     """
-    condition = lambda self, context: False
-    action = lambda self, context: None 
+    def __init__(self, condition=None, action=None):
+        self._condition = condition
+        self._action = action
+
+    def condition(self, context):
+        """
+        Condition for executing this rule.
+
+        Override in subclasses if necessary. Should return boolean value that
+        determines if rule is used.
+        """
+        return self._condition(self, context)
+
+    def action(self, context):
+        """
+        Action for executing this rule.
+
+        Override in subclasses if necessary. Should return dictionary with
+        results that will be added to context.
+        """
+        return self._action(self, context)
+
     def should_trigger(self, context):
         return self.condition(context)
+
     def perform(self, context):
         result = self.action(context) 
         context.update(result)
         return result
-    
+
+
 class TableRuleset(Rule):
     """
     a table ruleset created from a list of dict objects of the following format
@@ -51,19 +76,22 @@ class TableRuleset(Rule):
       ...
     ]
     
-    Each rule is only executed if all conditions are met. In conditions and actions, use context. 
-    to reference variables. targets implicitly reference context. (target 'xy' means 'context.xy').
-    The result of the nth 'then' action is stored in the nth context.variable as defined in target.
+    Each rule is only executed if all conditions are met. In conditions and
+    actions, use 'context.' to reference variables. Targets implicitly reference
+    'context.' (target 'xy' means 'context.xy').
+
+    The result of the nth 'then' action is stored in the nth 'context.variable'
+    as defined in target.
     """
     def __init__(self, rules, translations=None):
         self.rules = rules or {}
+        self._current_ruleid = None
         if translations:
             translator = Translator(translations)
             for rule in self.rules:
                 for key in rule.keys():
                     rule[key] = [translator.replace(item) for item in rule[key]]
-    def should_trigger(self, context):
-        return True
+
     def perform(self, context):
         count = 0
         for rule in self.rules:
@@ -74,20 +102,22 @@ class TableRuleset(Rule):
                     if context._translations:
                         action = context._translations.replace(action)
                         target = context._translations.replace(target)
-                    result = context[target.replace('context.', '').strip()] = eval(action, context.as_dict)
+                    result = \
+                        context[target.replace('context.', '').strip()] = \
+                        eval(action, context.as_dict)
                     self.record(context, result)
             else:
-                break
+                continue
         else:
             self._current_ruleid = None
             return True
         return False
+
     @property
     def ruleid(self):
         if self._current_ruleid:
             return "%s.%s" % (super(TableRuleset, self).ruleid, self._current_ruleid)
         return super(TableRuleset, self).ruleid
-    
 
     
 class SequencedRuleset(Rule):
@@ -96,15 +126,18 @@ class SequencedRuleset(Rule):
     """
     def __init__(self, rules):
         self.rules = rules or []
+
     def should_trigger(self, context):
         return True
+
     def perform(self, context):
         for rule in self.rules:
             if rule.should_trigger(context):
                 result = rule.perform(context)
                 rule.record(context, result)
         return True
-    
+
+
 class NaturalLanguageRule(TableRuleset):
     """
     A natural language rule given as a text. 
