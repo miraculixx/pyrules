@@ -1,6 +1,6 @@
 import unittest
 from pyrules import DictObject, RuleContext, RuleEngine, Translator
-from pyrules import Rule, ConditionalRule, SequencedRuleset, TableRuleset
+from pyrules import Rule, ConditionalRule, TableRule
 
 
 class DictObjectTest(unittest.TestCase):
@@ -74,7 +74,7 @@ class RuleTest(unittest.TestCase):
         rule.record(context, 'foo')
         self.assertTrue((rule.ruleid, 'foo') in context._executed)
 
-    def test_table_ruleset(self):
+    def test_table_rule(self):
         rules = [
             {'if': ['not context.foo'], 'then': ['10'], 'target': ['bar']},
             {'if': ['context.foo', 'True'], 'then': ['20', '30'],
@@ -82,10 +82,13 @@ class RuleTest(unittest.TestCase):
             {'if': ['context.foo', 'False'], 'then': ['40', '50'],
              'target': ['bar3', 'bar4']},
         ]
-        ruleset = TableRuleset(rules)
+        trule = TableRule(rules)
         context = RuleContext({'foo': True})
         engine = RuleEngine()
-        engine.execute([ruleset], context)
+        engine.execute([trule], context)
+        self.assertEqual(
+            context._executed,
+            [('TableRule.1', 20), ('TableRule.1', 30), ('TableRule', True)])
         self.assertEqual(context.to_dict(), {'foo': True, 'bar1': 20, 'bar2': 30})
 
     def test_engine(self):
@@ -106,7 +109,7 @@ class RuleTest(unittest.TestCase):
              'then' : ['Fahrpreis * 1.5'],
              'target' : ['Fahrpreis']}
         ]
-        ruleset = TableRuleset(rule_clauses, translations)
+        trule = TableRule(rule_clauses, translations)
 
         context = RuleContext({
             'distance': 10, 'weekend': 0, 'weather': 'nice', 'sunday': 1})
@@ -119,7 +122,7 @@ class RuleTest(unittest.TestCase):
             ConditionalRule(
                 condition=lambda self, context: not context.weekend,
                 action=lambda self, context: {'fare': context.fare * 4}),
-            ruleset
+            trule
         )
         engine = RuleEngine()
         engine.execute(rules, context)
@@ -130,6 +133,107 @@ class RuleTest(unittest.TestCase):
             [
                 ('FareRule', {'fare': 200}),
                 ('ConditionalRule', {'fare': 800}),
-                ('TableRuleset.1', 800), ('TableRuleset.2', 1200.0),
-                ('TableRuleset', True)
+                ('TableRule.1', 800), ('TableRule.2', 1200.0),
+                ('TableRule', True)
             ])
+
+    def test_yaml_loading(self):
+        rules_string = '''
+ruleset: TestTableRule
+rules:  
+    - rule: test1
+      if:
+         - not context.foo
+      then:
+          - 10
+      target:
+          - bar
+    - if:
+          - context.foo
+          - True
+      then:
+          - 20
+          - 30
+      target:
+          - bar1
+          - bar2
+    - if:
+          - context.foo
+          - False
+      then:
+          - 40
+          - 50
+      target:
+          - bar3
+          - bar4
+        '''
+        trule = TableRule.from_yaml(rules_string)
+        self.assertEqual(
+            trule.rules,
+            [
+                {'rule': 'test1', 'if': ['not context.foo'], 'then': ['10'],
+                 'target': ['bar']},
+                {'rule': None, 'if': ['context.foo', 'True'], 'then': ['20', '30'],
+                 'target': ['bar1', 'bar2']},
+                {'rule': None, 'if': ['context.foo', 'False'], 'then': ['40', '50'],
+                 'target': ['bar3', 'bar4']}
+            ])
+            
+        self.assertEqual(trule.ruleid, 'TestTableRule')
+        context = RuleContext({'foo': True})
+        engine = RuleEngine()
+        engine.execute([trule], context)
+        self.assertEqual(
+            context._executed,
+            [('TestTableRule.1', 20), ('TestTableRule.1', 30),
+             ('TestTableRule', True)])
+        self.assertEqual(
+            context.to_dict(), {'foo': True, 'bar1': 20, 'bar2': 30})
+
+    def test_json_loading(self):
+        rules_string = '''
+{
+    "ruleset": "TestTableRule",
+    "rules": [
+        {
+            "rule": "test1",
+            "if": ["not context.foo"],
+            "then": ["10"],
+            "target": ["bar"]
+        },
+        {
+            "if": ["context.foo", "True"],
+            "then": ["20", "30"],
+            "target": ["bar1", "bar2"]
+        },
+        {
+            "if": ["context.foo", "False"],
+            "then": ["40", "50"],
+            "target": ["bar3", "bar4"]
+        }
+    ]
+}
+        '''
+        trule = TableRule.from_json(rules_string)
+        self.assertEqual(
+            trule.rules,
+            [
+                {'rule': 'test1', 'if': ['not context.foo'], 'then': ['10'],
+                 'target': ['bar']},
+                {'rule': None, 'if': ['context.foo', 'True'], 'then': ['20', '30'],
+                 'target': ['bar1', 'bar2']},
+                {'rule': None, 'if': ['context.foo', 'False'], 'then': ['40', '50'],
+                 'target': ['bar3', 'bar4']}
+            ])
+            
+        self.assertEqual(trule.ruleid, 'TestTableRule')
+        context = RuleContext({'foo': True})
+        engine = RuleEngine()
+        engine.execute([trule], context)
+        self.assertEqual(
+            context._executed,
+            [('TestTableRule.1', 20), ('TestTableRule.1', 30),
+             ('TestTableRule', True)])
+        self.assertEqual(
+            context.to_dict(), {'foo': True, 'bar1': 20, 'bar2': 30})
+        
