@@ -1,0 +1,60 @@
+<html>
+  <head>
+    <title>PyRules demo</title>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
+
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap-theme.min.css">
+
+    <!-- JQuery -->
+    <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
+  </head>
+  <body>
+    <div class="container">
+
+      <form class="form-signin" role="form" method="POST">
+	{% csrf_token %}
+        <h2 class="form-signin-heading">Please enter two numbers</h2>
+	<div class="row">
+	  <div class="col-md-3">
+            <label for="username">First</label>
+	  </div>
+	  <div class="col-md-9">
+            <input name="first" id="first" class="form-control" placeholder="First number" required autofocus>
+	  </div>
+	</div>
+	<div class="row">
+	  <div class="col-md-3">
+            <label for="email">Second</label>
+	  </div>
+	  <div class="col-md-9">
+            <input name="second" id="second" class="form-control" placeholder="Second number" required>
+	  </div>
+	</div>
+        <button class="btn btn-lg btn-primary btn-block" type="submit">Submit</button>
+      </form>
+      {% if form.errors %}
+      <div class="bg-danger">
+	{{ form.errors }}
+      </div>
+      {% endif %}
+
+      <h3>First rule doubles first entered number{% if result %}: {{ result.first }} * 2 = {{ result.double_first }}{% endif %}</h3>
+      <h3>Second rule divides first number by the second{% if result %}{{ result.first }} / {{ result.second }} = {{ result.div_result }}{% endif %}</h3>
+      {% if result %}
+      <h4>Execution log:</h4>
+      <dl>
+	{% for item in logs %}
+	<dt>{{ item.0}}</dt>
+	<dd>{{ item.1 }}</dd>
+	{% endfor %}
+      </dl>
+      {% endif %}
+
+    </div> <!-- /container -->
+
+  </body>
+</html>

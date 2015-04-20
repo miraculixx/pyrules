@@ -32,7 +32,7 @@ setup(
     ],
     install_requires=[
         'Django==1.6',
-        'django-reversion',
+        'django-reversion==1.8.5', # Latest version (1.8.6) requires django 1.8
         'pyyaml',
     ],
     dependency_links=[

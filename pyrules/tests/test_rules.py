@@ -33,9 +33,6 @@ class EngineTest(unittest.TestCase):
         self.assertEqual(context.to_dict(), {'foo': 'bar', 'foo1': '123'})
         self.assertEqual(context.foo1, '123')
 
-    def test_rule_engine(self):
-        pass
-
 
 class LanguageTest(unittest.TestCase):
     def test_translator(self):
@@ -48,7 +45,6 @@ class LanguageTest(unittest.TestCase):
         self.assertEqual(trans.replace('foo'), 'bar')
         self.assertEqual(trans.replace('foo foo foo'), 'bar bar bar')
         self.assertEqual(trans.replace('not changed'), 'not changed')
-
 
 
 class TestRule(Rule):

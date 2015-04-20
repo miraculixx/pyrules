@@ -11,7 +11,7 @@ class RuleContext(DictObject):
     """
     def __init__(self, initial=None):
         super(RuleContext, self).__init__(initial=initial)
-        self._executed=[]
+        self._executed = []
 
     def __setitem__(self, item, value):
         self.__setattr__(item, value)
