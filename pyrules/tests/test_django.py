@@ -34,14 +34,15 @@ ruleset: TestTableRule
 rules:  
     - rule: test1
       if:
-         - not context.foo
+         conditions:
+             - foo__bool: False
       then:
           - 10
       target:
           - bar
     - if:
-          - context.foo
-          - True
+          conditions:
+              - foo__gt: 10
       then:
           - 20
           - 30
@@ -49,8 +50,8 @@ rules:
           - bar1
           - bar2
     - if:
-          - context.foo
-          - False
+          conditions:
+              - foo__lte: 10
       then:
           - 40
           - 50
@@ -81,12 +82,15 @@ rules:
         self.assertEqual(
             trule_obj.rules,
             [
-                {'rule': 'test1', 'if': ['not context.foo'], 'then': ['10'],
-                 'target': ['bar']},
-                {'rule': None, 'if': ['context.foo', 'True'], 'then': ['20', '30'],
-                 'target': ['bar1', 'bar2']},
-                {'rule': None, 'if': ['context.foo', 'False'], 'then': ['40', '50'],
-                 'target': ['bar3', 'bar4']}
+                {'rule': 'test1',
+                 'if': {'logic': None, 'conditions': [{'foo__bool': False}]},
+                 'then': [10], 'target': ['bar']},
+                {'rule': None,
+                 'if': {'logic': None, 'conditions': [{'foo__gt': 10}]},
+                 'then': [20, 30], 'target': ['bar1', 'bar2']},
+                {'rule': None,
+                 'if': {'logic': None, 'conditions': [{'foo__lte': 10}]},
+                 'then': [40, 50], 'target': ['bar3', 'bar4']}
             ])
         # Test ruleset API
         ruleset = store.get_ruleset('TestRuleset')

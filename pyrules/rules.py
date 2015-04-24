@@ -1,7 +1,9 @@
 import json
 import yaml
-from pyrules.dictobj import DictObject
-from pyrules.language import Translator
+from .conditions import LogicEvaluator
+from .dictobj import DictObject
+from .language import Translator
+
      
 class Rule(object):
     """
@@ -74,44 +76,45 @@ class TableRule(Rule):
     
     [ 
       {
-        'if' : ['condition1', ...],
+        'if' : {'logic': '1 | 2', 'conditions': ['foo', {'bar': 10}]},
         'then' : ['action1', ...],
         'target' : ['target1', ...]
       }, 
       ...
     ]
     
-    Each rule is only executed if all conditions are met. In conditions and
-    actions, use 'context.' to reference variables. Targets implicitly reference
-    'context.' (target 'xy' means 'context.xy').
+    Each rule is only executed if all conditions are met. In actions, use
+    'context.' to reference variables. Targets and conditions implicitly reference
+    'context.' (target 'xy' means 'context.xy'). Logic can be omitted, which
+    would imply "&" operation for all conditions. Condition can be a dictionary or
+    a single value, so 'value' is equivalent to {'value': True}
 
     The result of the nth 'then' action is stored in the nth 'context.variable'
     as defined in target.
     """
-    def __init__(self, rules, translations=None, name=None):
+    def __init__(self, rules, name=None):
         self.rules = rules or {}
         if name:
             self.name = name
         self._current_ruleid = None
-        if translations:
-            translator = Translator(translations)
-            for rule in self.rules:
-                for key in rule.keys():
-                    rule[key] = [translator.replace(item) for item in rule[key]]
 
     def perform(self, context):
         count = 0
         for rule in self.rules:
-            if all([eval(condition, context.as_dict) for condition in rule['if']]):
+            evaluator = LogicEvaluator(
+                rule['if'].get('logic'), rule['if']['conditions'])
+            if evaluator.evaluate(context):
                 count = count + 1
                 self._current_ruleid = rule.get('rule') or count
                 for action, target in zip(rule['then'], rule['target']):
-                    if context._translations:
-                        action = context._translations.replace(action)
-                        target = context._translations.replace(target)
+                    #if context._translations:
+                    #    action = context._translations.replace(action)
+                    #    target = context._translations.replace(target)
                     result = \
-                        context[target.replace('context.', '').strip()] = \
-                        eval(action, context.as_dict)
+                        context[target.replace('context.', '').strip()] = (
+                            eval(action, context.as_dict)
+                            if isinstance(action, basestring)
+                            else action)
                     self.record(context, result)
             else:
                 continue
@@ -138,11 +141,20 @@ class TableRule(Rule):
     def _from_data(cls, data):
         # We have to convert non-string data in clauses back to strings,
         # because they will be eval-ed
-        rules = [
-            {'rule': rule.get('rule'), 'if': map(str, rule['if']),
-             'then': map(str, rule['then']),
-             'target': map(str, rule['target'])}
-            for rule in data['rules']]
+        rules = []
+        for rule in data['rules']:
+            obj = {
+                'rule': rule.get('rule'),
+                'then': rule['then'],
+                'target': rule['target']}
+            if_clause = {}
+            # Convert conditions to dictionaries, i.e. "foo" becomes {"foo": True}
+            conditions = rule['if'].get('conditions', [])
+            # Get logic string. If it's not specified, generate string like
+            # "1 & 2 & .. & N", where N is number of conditions.
+            logic = rule['if'].get('logic')
+            obj['if'] = {'logic': logic, 'conditions': conditions}
+            rules.append(obj)
         return cls(rules, name=data.get('ruleset'))
 
     
@@ -170,8 +182,12 @@ class NaturalLanguageRule(TableRule):
     TODO implement this
     """
     def __init__(self, translations):
+        if translations:
+            translator = Translator(translations)
+            for rule in self.rules:
+                for key in rule.keys():
+                    rule[key] = [translator.replace(item) for item in rule[key]]
         translator = Translator(translations)
-        from inspect import getdoc
             
     def should_trigger(self, context):
         pass

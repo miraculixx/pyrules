@@ -43,7 +43,7 @@
       {% endif %}
 
       <h3>First rule doubles first entered number{% if result %}: {{ result.first }} * 2 = {{ result.double_first }}{% endif %}</h3>
-      <h3>Second rule divides first number by the second{% if result %}{{ result.first }} / {{ result.second }} = {{ result.div_result }}{% endif %}</h3>
+      <h3>Second rule divides first number by the second{% if result %}: {{ result.first }} / {{ result.second }} = {{ result.div_result }}{% endif %}</h3>
       {% if result %}
       <h4>Execution log:</h4>
       <dl>
