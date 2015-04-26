@@ -1,0 +1,71 @@
+[
+    {
+	"pk": 1,
+	"model": "sites.site",
+	"fields": {
+	    "name": "Site ABC",
+	    "domain": "abc.example.com"
+	}
+    },
+    {
+	"pk": 1,
+	"model": "pyrules.rule",
+	"fields": {
+	    "name": "First",
+	    "slug": "first",
+	    "source": "pyrules.rules.TableRule",
+	    "description": ""
+	}
+    },
+    {
+	"pk": 2,
+	"model": "pyrules.rule",
+	"fields": {
+	    "name": "Second",
+	    "slug": "second",
+	    "source": "pyrules.rules.TableRule",
+	    "description": ""
+	}
+    },
+    {
+	"pk": 1,
+	"model": "pyrules.tablerule",
+	"fields": {
+	    "tablerule_format": 1,
+	    "definition": "ruleset: DoubleFirst\nrules:\n    - rule: first_rule\n      if:\n          conditions:\n              - True\n      then:\n          - context.first * 2\n      target:\n          - double_first"
+	}
+    },
+    {
+	"pk": 2,
+	"model": "pyrules.tablerule",
+	"fields": {
+	    "tablerule_format": 1,
+	    "definition": "ruleset: Division\nrules:\n    - rule: second_rule\n      if:\n          conditions:\n              - second__neq: 0\n      then:\n          - context.first / context.second\n      target:\n          - div_result"
+	}
+    },
+    {
+	"pk": 1,
+	"model": "pyrules.ruleset",
+	"fields": {
+	    "name": "Sample"
+	}
+    },
+    {
+	"pk": 1,
+	"model": "pyrules.ruleposition",
+	"fields": {
+	    "rule": 1,
+	    "ruleset": 1,
+	    "priority": 200
+	}
+    },
+    {
+	"pk": 2,
+	"model": "pyrules.ruleposition",
+	"fields": {
+	    "rule": 2,
+	    "ruleset": 1,
+	    "priority": 100
+	}
+    }    
+]

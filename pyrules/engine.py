@@ -9,19 +9,36 @@ class RuleContext(DictObject):
     for the rules to consider. A rule does not have access to
     any other data except provided in this rule context. 
     """
-    def __init__(self):
-        super(RuleContext, self).__init__()
-        self._executed=[]
+    def __init__(self, initial=None):
+        super(RuleContext, self).__init__(initial=initial)
+        self._executed = []
+
     def __setitem__(self, item, value):
         self.__setattr__(item, value)
-    def __getattr__(self, item):
-        if not item in self.__dict__ and not item in self._data:
-            return None
-        return super(RuleContext, self).__getattr__(item)
+
+    def __getitem__(self, item):
+        if item.startswith('_'):
+            raise KeyError('Key {} not found'.format(item))
+        else:
+            try:
+                return self.__getattr__(item)
+            except AttributeError:
+                raise KeyError('Key {} not found'.format(item))
+                
     @property
     def as_dict(self):
-        return {'context' : self }
+        return {'context' : self}
 
+    def to_dict(self):
+        # Return copy of context data to prevent later modification by
+        # caller
+        return dict(self._data)
+
+    def __unicode__(self):
+        return unicode(self.to_dict())
+
+    def __repr__(self):
+        return u'<RuleContext: {}>'.format(self.to_dict()).encode('utf-8')
 
 
 class RuleEngine(object):
@@ -32,7 +49,12 @@ class RuleEngine(object):
     2. if True, call the rule's perform method to evaluate it
     3. then call the rule's record method, to record the evaluation's result
     """
-    def execute(self, ruleset, context):
+    def execute(self, ruleset, context, unsafe=True):
+        """
+        Execute ruleset in given context
+        
+        @param unsafe: enable unsafe evaluation using eval
+        """
         for rule in ruleset:
             if rule.should_trigger(context):
                 result = rule.perform(context)
