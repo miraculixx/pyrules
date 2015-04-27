@@ -76,7 +76,7 @@ class RuleTest(unittest.TestCase):
              'then': ['10'], 'target': ['bar']},
             {'if': {'conditions': ['foo__bool']}, 'then': ['20', '30'],
              'target': ['bar1', 'bar2']},
-            {'if': {'conditions': [{'foo': False}]}, 'then': ['40', '50'],
+            {'if': [{'foo': False}], 'then': ['40', '50'],
              'target': ['bar3', 'bar4']},
         ]
         trule = TableRule(rules)
