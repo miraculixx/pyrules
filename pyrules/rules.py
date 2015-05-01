@@ -93,23 +93,24 @@ class TableRule(Rule):
     as defined in target.
     """
     def __init__(self, rules, name=None):
-        self.rules = rules or {}
+        self.rules = self._load_data({'rules': rules})
         if name:
             self.name = name
+        
         self._current_ruleid = None
-
-    def perform(self, context):
-        count = 0
+        self._evaluators = []
         for rule in self.rules:
             evaluator = LogicEvaluator(
                 rule['if'].get('logic'), rule['if']['conditions'])
+            self._evaluators.append(evaluator)
+
+    def perform(self, context):
+        count = 0
+        for evaluator, rule in zip(self._evaluators, self.rules):
             if evaluator.evaluate(context):
                 count = count + 1
                 self._current_ruleid = rule.get('rule') or count
                 for action, target in zip(rule['then'], rule['target']):
-                    #if context._translations:
-                    #    action = context._translations.replace(action)
-                    #    target = context._translations.replace(target)
                     result = \
                         context[target.replace('context.', '').strip()] = (
                             eval(action, context.as_dict)
@@ -117,7 +118,7 @@ class TableRule(Rule):
                             else action)
                     self.record(context, result)
             else:
-                continue
+                continue            
         else:
             self._current_ruleid = None
             return True
@@ -139,6 +140,15 @@ class TableRule(Rule):
 
     @classmethod
     def _from_data(cls, data):
+        rules = cls._load_data(data)
+        return cls(rules, name=data.get('ruleset'))
+
+    @staticmethod
+    def _load_data(data):
+        """
+        Rules data is preprocessed here i.e. to convert from brief rule
+        definitions to detailed format.
+        """
         # We have to convert non-string data in clauses back to strings,
         # because they will be eval-ed
         rules = []
@@ -149,13 +159,17 @@ class TableRule(Rule):
                 'target': rule['target']}
             if_clause = {}
             # Convert conditions to dictionaries, i.e. "foo" becomes {"foo": True}
-            conditions = rule['if'].get('conditions', [])
-            # Get logic string. If it's not specified, generate string like
-            # "1 & 2 & .. & N", where N is number of conditions.
-            logic = rule['if'].get('logic')
+            if isinstance(rule['if'], list):
+                logic = None
+                conditions = rule['if']
+            else:
+                conditions = rule['if'].get('conditions', [])
+                # Get logic string. If it's not specified, generate string like
+                # "1 & 2 & .. & N", where N is number of conditions.
+                logic = rule['if'].get('logic')
             obj['if'] = {'logic': logic, 'conditions': conditions}
             rules.append(obj)
-        return cls(rules, name=data.get('ruleset'))
+        return rules
 
     
 class SequencedRuleset(Rule):
