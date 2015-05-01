@@ -141,6 +141,11 @@ class CTestCase(TestCase):
             (~(C(foo=True) & C(bar=False)))._expr,
             (C.AND, ('foo', True, False), ('bar', False, False), True))
 
+    def test_multi_cond(self):
+        self.assertEqual(
+            C(foo__gt=4, foo__ne=10)._expr,
+            (C.AND, ('foo__gt', 4, False), ('foo__ne', 10, False), False))
+
     def test_repr(self):
         self.assertEqual(repr(C(foo='bar')), '<C: foo == bar>')
         self.assertEqual(repr(~C(foo='bar')), '<C: foo != bar>')
@@ -159,6 +164,9 @@ class CTestCase(TestCase):
         self.assertEqual(
             repr(~(C(foo='bar') & C(x=100))),
             '<C: NOT(foo == bar AND x == 100)>')
+        self.assertEqual(
+            repr(C(foo__gt=4, foo__ne=10)),
+            '<C: (foo__gt == 4 AND foo__ne == 10)>')
 
 
 class LogicEvaluatorTestCase(TestCase):
