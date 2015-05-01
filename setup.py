@@ -34,7 +34,8 @@ setup(
         'Django==1.6',
         'django-reversion==1.8.5', # Latest version (1.8.6) requires django 1.8
         'pyyaml==3.11',
-        'pyparsing==2.0.3'
+        'pyparsing==2.0.3',
+        'tastypie',
     ],
     dependency_links=[
     ]

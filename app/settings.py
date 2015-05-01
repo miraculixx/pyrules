@@ -40,7 +40,8 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'django.contrib.sites',
     'pyrules',
-    'reversion'
+    'reversion',
+    'tastypie'
 )
 
 MIDDLEWARE_CLASSES = (

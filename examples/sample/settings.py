@@ -40,6 +40,8 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'django.contrib.sites',
     'pyrules',
+    'reversion',
+    'tastypie',
     'examples.sample.sampleapp',
 )
 
