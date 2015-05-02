@@ -35,8 +35,11 @@ setup(
         'django-reversion==1.8.5', # Latest version (1.8.6) requires django 1.8
         'pyyaml==3.11',
         'pyparsing==2.0.3',
-        'tastypie',
+        'celery==3.1.18',
+        'django-tastypie==0.12.1',
+        'tastypie-async==0.1.1',
     ],
     dependency_links=[
+        'https://github.com/miraculixx/tastypie-async/archive/0.1.1.zip#egg=tastypie-async-0.1.1'
     ]
 )

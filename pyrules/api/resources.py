@@ -1,9 +1,11 @@
 import json
 from tastypie.resources import Resource
+from tpasync.resources import AsyncResourceMixin
 from .. import RuleEngine, RuleStore, RuleContext
+from ..tasks import execute_rule, execute_ruleset
 
 
-class RuleSyncResource(Resource):
+class RuleSyncResourceMixin(object):
     class Meta:
         allowed_methods = ['post']
         resource_name = 'rule'
@@ -27,7 +29,26 @@ class RuleSyncResource(Resource):
         return self.create_response(request, bundle)        
 
 
-class RulesetSyncResource(Resource):
+class RuleSyncResource(RuleSyncResourceMixin, Resource):
+    pass
+
+
+class RuleAsyncResourceMixin(AsyncResourceMixin):
+    class Meta:
+        allowed_methods = ['post']
+        resource_name = 'rule_async'
+        include_resource_uri = False
+
+    def async_post_detail(self, request, pk, **kwargs):
+        context = json.loads(request.body)
+        return execute_rule.apply_async([pk, context])
+
+
+class RuleAsyncResource(RuleAsyncResourceMixin, Resource):
+    pass
+
+
+class RulesetSyncResourceMixin(object):
     class Meta:
         allowed_methods = ['post']
         resource_name = 'ruleset'
@@ -43,3 +64,22 @@ class RulesetSyncResource(Resource):
         bundle = self.build_bundle(data=data, request=request)
         self.full_dehydrate(bundle)
         return self.create_response(request, bundle)
+
+
+class RulesetSyncResource(RulesetSyncResourceMixin, Resource):
+    pass
+
+
+class RulesetAsyncResourceMixin(AsyncResourceMixin):
+    class Meta:
+        allowed_methods = ['post']
+        resource_name = 'ruleset_async'
+        include_resource_uri = False
+
+    def async_post_detail(self, request, pk, **kwargs):
+        context = json.loads(request.body)
+        return execute_ruleset.apply_async([pk, context])
+
+
+class RulesetAsyncResource(RulesetAsyncResourceMixin, Resource):
+    pass
