@@ -40,7 +40,8 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'django.contrib.sites',
     'pyrules',
-    'reversion'
+    'reversion',
+    'tastypie'
 )
 
 MIDDLEWARE_CLASSES = (
@@ -84,14 +85,20 @@ USE_L10N = True
 USE_TZ = True
 
 
+# Celery settings
+CELERY_ALWAYS_EAGER = False
+#CELERY_IMPORTS = ('pyrules.tests',)
+CELERY_BACKEND = 'amqp'
+
+#CELERY_TASK_SERIALIZER = 'json'
+#CELERY_RESULT_SERIALIZER = 'json'
+
+#BROKER_URL = 'django://'
+BROKER_URL = 'amqp://guest:guest@localhost:5672'
+
+TASTYPIE_DEFAULT_FORMATS = ['json']
+
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.6/howto/static-files/
 
 STATIC_URL = '/static/'
-
-# There's a useless annoyinig RuntimeWarning that we'd rather mute.'
-import warnings
-import exceptions
-warnings.filterwarnings(
-    "ignore", category=exceptions.RuntimeWarning,
-    module='django.db.models.fields', lineno=903)

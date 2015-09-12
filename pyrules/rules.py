@@ -113,7 +113,7 @@ class TableRule(Rule):
                 for action, target in zip(rule['then'], rule['target']):
                     result = \
                         context[target.replace('context.', '').strip()] = (
-                            eval(action, context.as_dict)
+                            eval(action, {'context': context})
                             if isinstance(action, basestring)
                             else action)
                     self.record(context, result)

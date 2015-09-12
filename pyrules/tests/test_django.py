@@ -1,10 +1,10 @@
-import unittest
 from django.contrib.auth.models import User
+from django.test import TestCase
 from django.test.client import Client
 from .. import models, rules, storage
 
 
-class DjangoAppTestCase(unittest.TestCase):
+class DjangoAppTestCase(TestCase):
     def setUp(self):
         self.admin = User.objects.create_user(
             'admin', 'admin@example.com', 'topsecret')
